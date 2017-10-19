@@ -2,6 +2,30 @@ import theano
 import theano.tensor as T
 import numpy as np
 
+def define_predict(W1, b1, W2, b2, W3, b3):
+	#--------------------------------------------------------------------
+	#
+	#Forward propagation
+	#
+	#--------------------------------------------------------------------
+	A0 = T.dmatrix('A0')
+	
+	Z1 = T.dot(W1, A0) + b1
+	A1 = T.nnet.relu(Z1)
+	
+	Z2 = T.dot(W2, A1) + b2
+	A2 = T.nnet.relu(Z2)
+	
+	Z3 = T.dot(W3, A2) + b3
+	A3 = T.nnet.sigmoid(Z3)
+
+	#--------------------------------------------------------------------
+	#
+	#Actual computation
+	#
+	#--------------------------------------------------------------------
+	return theano.function([A0], A3)
+
 def define_model(layers):
 	#--------------------------------------------------------------------
 	#
@@ -54,7 +78,7 @@ def define_model(layers):
 	#Update parameters
 	#
 	#--------------------------------------------------------------------
-	train = theano.function(
+	return theano.function(
 		inputs=[A0, labels, alpha],
 		outputs=[cost, W1, W2, W3, b1, b2, b3],
 		updates=[
@@ -65,5 +89,3 @@ def define_model(layers):
 			[b2, b2 - alpha*db2],
 			[b3, b3 - alpha*db3]
 		])
-
-	return train

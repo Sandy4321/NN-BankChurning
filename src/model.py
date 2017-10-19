@@ -1,26 +1,31 @@
-import numpy as np
-import h5py
-import util
 from model_impl import define_model
+from model_impl import define_predict
+import util
+import dataset
 
 if __name__ == "__main__":
 
-	h5file = h5py.File('../gen/dataset.h5', 'r')
+	Xtrain, Xtest, Ytrain, Ytest = dataset.load_ds_train_test('../gen/dataset.h5')
 
-	X_train = np.array(h5file['X_train'], dtype=np.float32).T
-	X_test = np.array(h5file['X_test'], dtype=np.float32).T
-	Y_train = np.array(h5file['Y_train']).T
-	Y_test = np.array(h5file['Y_test']).T
-
-	features = X_train.shape[0]
-	m = X_train.shape[1]
-
+	features = Xtrain.shape[0]
 	layers = [features, 10, 5, 1]
 
 	train = define_model(layers)
-	epochs = 10000
+	epochs = 50000
 
 	for i in range(epochs):
-		cost, W1, W2, W3, b1, b2, b3 = train(X_train, Y_train, 0.01)
+		cost, W1, W2, W3, b1, b2, b3 = train(Xtrain, Ytrain, 0.1)
 		if i % 100 == 0:
 			print('Cost on epoch %i: %s' %(i, cost))
+
+	predictor = define_predict(W1, b1, W2, b2, W3, b3)
+	
+	Ytrain_hat = util.binary(predictor(Xtrain))
+	Ytest_hat = util.binary(predictor(Xtest))
+
+	util.perf_report(Ytrain_hat, Ytrain, Ytest_hat, Ytest)
+
+	
+	#implement error analysis
+	#implement confusion matrix
+	#implement 
